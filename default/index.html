@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<!--
+// Copyright (C) 2017 The DappBox Authors.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// You can obtain one at https://mozilla.org/MPL/2.0/.
+
+-->
+<html lang="en" ng-app="dappbox" ng-controller="DappBoxController" class="ng-cloak">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="shortcut icon" href="assets/img/favicondAppBox.png">
+
+  <title ng-bind="thisDeviceName() + ' | FactMap Node'"></title>
+
+  <link href="vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/animate-css/animate.min.css" media="screen" >
+  <link rel="stylesheet" href="assets/css/lobipanel/lobipanel.min.css" media="screen" >
+  <link rel="stylesheet" href="assets/css/toastr/toastr.min.css" media="screen" >
+  <link rel="stylesheet" href="assets/css/prism/prism.css" media="screen" >
+
+  <link href="assets/font/raleway.css" rel="stylesheet">
+  <link href="vendor/font-awesome/css/font-awesome.css" rel="stylesheet">
+  <link href="assets/css/overrides.css" rel="stylesheet">
+  <link href="assets/css/theme.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/main.css" media="screen" >
+  <link rel="stylesheet" href="assets/css/custom.css">
+
+  <script src="assets/js/modernizr/modernizr.min.js"></script>
+
+
+</head>
+
+<body class="top-navbar-fixed">
+  <script src="dappbox/development/logbar.js"></script>
+  <div ng-if="version.isDevelopmentVersion" ng-include="'dappbox/development/logbar.html'"></div>
+  <!-- Top bar -->
+
+  <nav class="navbar top-navbar bg-white box-shadow">
+    <div class="container-fluid">
+      <button type="button" class="navbar-toggle" ng-click = "slideSidebar('sidebar')" style="border-color:#3c3c3c">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="fa fa-bars small-bars"></span>
+			</button>
+
+      <span class="navbar-brand" aria-hidden="true">
+        <img class="logo hidden-xs" src="assets/img/dAppBox.png" height="32" width="120"/>
+        <img class="logo hidden visible-xs" src="assets/img/favicondAppBox.png" height="32"/>
+      </span>
+      <p class="navbar-text hidden-xs" ng-class="{'hidden-sm':upgradeInfo && upgradeInfo.newer}">{{thisDeviceName()}}</p>
+      <ul class="nav navbar-nav navbar-right">
+        <!-- <li class="dropdown" language-select></li> -->
+        <!--
+        <li class="dropdown action-menu">
+          <a href="#" ng-click="ethereumNetwork()" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <span class="fa fa-bars"></span>
+            <span class="hidden-xs">Ethereum Networks</span>
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a id="main-network" href="#" ng-click="switch2main()"><i id="main-network-circle" class="fa fa-circle" style="display:none"></i><span>Main Network</span></a></li>
+            <li class="divider" aria-hidden="true"></li>
+            <li><a id="ropsten-network" href="#" ng-click="switch2ropsten()" style="font-weight:bold"><i id="ropsten-network-circle" class="fa fa-circle"></i><span>Ropsten Network</span></a></li>
+            <li class="divider" aria-hidden="true"></li>
+            <li><a id="private-network" href="#" ng-click="switch2private()"><i id="private-network-circle" class="fa fa-circle" style="display:none"></i><span>Private Network</span></a></li>
+          </ul>
+        </li>
+      -->
+        <li class="dropdown action-menu">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <span class="fa fa-cog"></span>
+            <span class="hidden-xs">Actions</span>
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="" data-toggle="modal" data-target="#idqr" ng-click="currentDevice=thisDevice(); ethereumNodeInfo()"><span class="fa fa-fw fa-qrcode"></span>&nbsp;<span>Show Blockchain Address</span></a></li>
+            <li class="divider" aria-hidden="true"></li>
+            <li><a href="" ng-click="shutdown()"><span class="fa fa-fw fa-power-off"></span>&nbsp;<span>Close</span></a></li>
+            <li class="divider" aria-hidden="true"></li>
+            <!--
+            <li><a href="" ng-click="advanced()"><span class="fa fa-fw fa-cogs"></span>&nbsp;<span>API access</span></a></li>
+          -->
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="content-wrapper">
+    <div class="content-container">
+      <div class="left-sidebar fixed-sidebar bg-black-300 box-shadow visible-sidebar">
+        <div class="sidebar-content">
+          <div class="sidebar-nav">
+            <ul class="side-nav color-gray">
+              <li class="nav-header"><span class="category"><span>Metrics</span><a class="add-category" href="#" ng-click="closeGraphs()"><i class="fa fa-close fa-2x"></i></a></span></li>
+              <li class="has-children">
+                <a href="#"><i class="fa fa-desktop"></i><span>This DappBox</span><i class=" arrow"></i></a>
+                <ul style="display:none;" class="child-nav">
+                  <li>
+                    <a href="#" ng-click="slideGraph('dappbox-metrics')"><i class="fa fa-desktop"></i><span>DappBox's Metrics</span></a>
+                    <ul id="dappbox-metrics" style="display:none;" class="nolist">
+                      <li><a href="#" ng-click="showGraph('1')"><i class="fa fa-line-chart"></i><span>CPU Utilization History</span></a></li>
+                      <li><a href="#" ng-click="showGraph('2')"><i class="fa fa-line-chart"></i><span>RAM Utilization History</span></a></li>
+                      <li><a href="#" ng-click="showGraph('3')"><i class="fa fa-line-chart"></i><span>Disk Usage History</span></a></li>
+                      <li><a href="#" ng-click="showGraph('4')"><i class="fa fa-line-chart"></i><span>Download Rate History</span></a></li>
+                      <li><a href="#" ng-click="showGraph('5')"><i class="fa fa-line-chart"></i><span>Upload Rate History</span></a></li>
+                      <li><a href="#" ng-click="showGraph('6')"><i class="fa fa-line-chart"></i><span>Bandwidth History</span></a></li>
+                      <li><a href="#" ng-click="showGraph('7')"><i class="fa fa-pie-chart"></i><span>Disk Usage (%)</span></a></li>
+                      <li><a href="#" ng-click="showGraph('8')"><i class="fa fa-bar-chart"></i><span>Number of Transfers</span></a></li>
+                      <li><a href="#" ng-click="showGraph('9')"><i class="fa fa-reorder"></i><span>List of past transfers</span></a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="#" ng-click="slideGraph('ethereum-metrics')"><i class="fa fa-desktop"></i><span>Ethereum Metrics</span></a>
+                    <ul id ="ethereum-metrics" style=display:none; class="nolist">
+                      <li><a href="#" ng-click="showGraph('10')"><i class="fa fa-line-chart"></i><span>Hash Rate History</span></a></li>
+                      <li><a href="#" ng-click="slideGraph('chain-inserts')"><i class="fa fa-desktop"></i><span>Chain Inserts</span></a>
+                        <ul id="chain-inserts" style="display:none;" class="nolist">
+                          <li><a href="#" ng-click="showGraph('11')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                          <li><a href="#" ng-click="showGraph('12')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                          <li><a href="#" ng-click="showGraph('13')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                          <li><a href="#" ng-click="showGraph('14')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                          <li><a href="#" ng-click="showGraph('15')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                          <li><a href="#" ng-click="showGraph('16')"><i class="fa fa-line-chart"></i><span>Percentiles 5 History</span></a></li>
+                          <li><a href="#" ng-click="showGraph('17')"><i class="fa fa-line-chart"></i><span>Percentiles 20 History</span></a></li>
+                          <li><a href="#" ng-click="showGraph('18')"><i class="fa fa-line-chart"></i><span>Percentiles 50 History</span></a></li>
+                          <li><a href="#" ng-click="showGraph('19')"><i class="fa fa-line-chart"></i><span>Percentiles 80 History</span></a></li>
+                          <li><a href="#" ng-click="showGraph('20')"><i class="fa fa-line-chart"></i><span>Percentiles 95 History</span></a></li>
+                        </ul>
+                      </li>
+                      <li><a href="#" ng-click="slideGraph('p2p')"><i class="fa fa-desktop"></i><span>Peer to Peer (P2P)</span></a>
+                        <ul id="p2p" style="display:none;" class="nolist">
+                          <li><a href="#" ng-click="slideGraph('inbound-connects')"><i class="fa fa-desktop"></i><span>Inbound Connects</span></a>
+                            <ul id="inbound-connects" style="display:none;" class="nolist">
+                              <li><a href="#" ng-click="showGraph('21')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('22')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('23')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('24')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('25')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                            </ul>
+                          </li>
+                          <li><a href="#" ng-click="slideGraph('inbound-traffic')"><i class="fa fa-desktop"></i><span>Inbound Traffic</span></a>
+                            <ul id="inbound-traffic" style="display:none;" class="nolist">
+                              <li><a href="#" ng-click="showGraph('26')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('27')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('28')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('29')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('30')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                            </ul>
+                          </li>
+                          <li><a href="#" ng-click="slideGraph('outbound-connects')"><i class="fa fa-desktop"></i><span>Outbound Connects</span></a>
+                            <ul id="outbound-connects" style="display:none;" class="nolist">
+                              <li><a href="#" ng-click="showGraph('31')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('32')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('33')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('34')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('35')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                            </ul>
+                          </li>
+                          <li><a href="#" ng-click="slideGraph('outbound-traffic')"><i class="fa fa-desktop"></i><span>Outbound Traffic</span></a>
+                            <ul id="outbound-traffic" style="display:none;" class="nolist">
+                              <li><a href="#" ng-click="showGraph('36')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('37')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('38')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('39')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                              <li><a href="#" ng-click="showGraph('40')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a href="#" ng-click="slideGraph('system')"><i class="fa fa-desktop"></i><span>System</span></a>
+                        <ul id="system" style="display:none;" class="nolist">
+                          <li><a href="#" ng-click="slideGraph('disk')"><i class="fa fa-desktop"></i><span>Disk</span></a>
+                            <ul id="disk" style="display:none;" class="nolist">
+                              <li><a href="#" ng-click="slideGraph('read-count')" ><i class="fa fa-desktop"></i><span>Read Count</span></a>
+                                <ul id="read-count" style="display:none;" class="nolist">
+                                  <li><a href="#" ng-click="showGraph('41')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('42')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('43')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('44')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('45')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                                </ul>
+                              </li>
+                              <li><a href="#" ng-click="slideGraph('read-data')"><i class="fa fa-desktop"></i><span>Read Data</span></a>
+                                <ul id="read-data" style="display:none;" class="nolist">
+                                  <li><a href="#" ng-click="showGraph('46')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('47')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('48')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('49')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('50')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                                </ul>
+                              </li>
+                              <li><a href="#" ng-click="slideGraph('write-count')"><i class="fa fa-desktop"></i><span>Write Count</span></a>
+                                <ul id="write-count" style="display:none;" class="nolist">
+                                  <li><a href="#" ng-click="showGraph('51')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('52')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('53')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('54')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('55')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                                </ul>
+                              </li>
+                              <li><a href="#" ng-click="slideGraph('write-data')"><i class="fa fa-desktop"></i><span>Write Data</span></a>
+                                <ul id="write-data" style="display:none;" class="nolist">
+                                  <li><a href="#" ng-click="showGraph('56')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('57')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('58')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('59')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('60')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                                </ul>
+                              </li>
+                            </ul>
+                          </li>
+                          <li><a href="#" ng-click="slideGraph('memory')"><i class="fa fa-desktop"></i><span>Memory</span></a>
+                            <ul id="memory" style="display:none;" class="nolist">
+                              <li><a href="#" ng-click="slideGraph('allocs')"><i class="fa fa-desktop"></i><span>Allocs</span></a>
+                                <ul id="allocs" style="display:none;" class="nolist">
+                                  <li><a href="#" ng-click="showGraph('61')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('62')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('63')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('64')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('65')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                                </ul>
+                              </li>
+                              <li><a href="#" ng-click="slideGraph('frees')"><i class="fa fa-desktop"></i><span>Frees</span></a>
+                                <ul id="frees" style="display:none;" class="nolist">
+                                  <li><a href="#" ng-click="showGraph('66')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('67')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('68')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('69')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('70')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                                </ul>
+                              </li>
+                              <li><a href="#" ng-click="slideGraph('inuse')"><i class="fa fa-desktop"></i><span>In use</span></a>
+                                <ul id="inuse" style="display:none;" class="nolist">
+                                  <li><a href="#" ng-click="showGraph('71')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('72')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('73')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('74')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('75')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                                </ul>
+                              </li>
+                              <li><a href="#" ng-click="slideGraph('pauses')"><i class="fa fa-desktop"></i><span>Pauses</span></a>
+                                <ul id="pauses" style="display:none;" class="nolist">
+                                  <li><a href="#" ng-click="showGraph('76')"><i class="fa fa-line-chart"></i><span>Average Rate (1Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('77')"><i class="fa fa-line-chart"></i><span>Average Rate (5Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('78')"><i class="fa fa-line-chart"></i><span>Average Rate (15Min) History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('79')"><i class="fa fa-line-chart"></i><span>Mean Rate History</span></a></li>
+                                  <li><a href="#" ng-click="showGraph('80')"><i class="fa fa-line-chart"></i><span>Overall History</span></a></li>
+                                </ul>
+                              </li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li class="has-children">
+                <a href="#" class="inline categories"><span class="category"><i class="fa fa-hdd-o"></i> <span>My DappBox's network</span><a href="#" class="add-dappbox inline-add" ng-click="addDevice()"><i class="fa fa-plus-circle"></i></a></span></a>
+                <ul class="child-nav">
+                  <li ng-repeat="deviceCfg in otherDevices()">
+                    <a href="#" ng-click ="showDevice(deviceCfg.deviceID)">
+                      <i class="fa fa-desktop"></i>
+                      <span>{{deviceCfg.name}}</span>
+                      <i class=" arrow"></i>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+              </li>
+              <li class="nav-header"><span class="category"><span>Folders</span><a id="plus-category" class="add-category" href="#" ng-click="addCategory('add-category')"><i class="fa fa-plus-circle fa-2x"></i></a></span></li>
+              <li class="has-children" ng-repeat="category in categoryList()" ng-if="isSubCategory(category.Name) == false">
+                  <a class="inline categories" href="#" ng-click="slideCategory(category.Name)"><i class="fa fa-folder-open"></i><span style="margin-right:20px;">{{category.Name}}</span></a>
+                  <span class="inline-span"><a id="add-subcategory" class="inline-add" href="#" ng-click="addSubCategory('input-subcategory',category.Name)"><i class="fa fa-plus-circle"></i></a>
+                  <a id="edit-icon" class="inline-edit" href="#" ng-if="category.Name != 'Default'" ng-click="editCategory('edit-category',category.Name)"><i class="fa fa-pencil-square-o"></i></a>
+                  <a class="inline-delete" href="#" ng-if="category.Name != 'Default'" ng-click="deleteCategory(category.Name)"><i class="fa fa-times-circle"></i></a></span>
+                <ul id ="{{category.Name}}-list" class="child-nav" style="display:none;">
+                  <li ng-repeat="folder in folderList()" ng-if="folderCategory(folder) == category.Name">
+                    <a class="subcategories" href="#" ng-click = "showFolder(folder.id)">
+                      <i class="fa " ng-class="[folder.type == 'readonly' ? 'fa-lock' : 'fa-folder']"></i>
+                      <span tooltip data-original-title="{{folder.label.length != 0 ? folder.id : ''}}">{{folder.label.length != 0 ? folder.label : folder.id}}</span>
+                      <i class=" arrow"></i>
+                    </a>
+                  </li>
+                  <li ng-repeat="subcategory in categoryList()" ng-if="existSubCategory(category.Name) == true && verifySubCategory(subcategory.Name) == category.Name">
+                      <a class="inline subcategories" href="#" ng-click="slideCategory(subcategory.Name)"><i class="fa fa-folder-open"></i><span style="margin-right:20px;">{{subcategory.Name}}</span></a>
+                      <span class="inline-span"><a id="add-subcategory" class="inline-add" href="#" ng-click="addSubCategory('input-subcategory',subcategory.Name)"><i class="fa fa-plus-circle"></i></a>
+                      <a id="edit-icon" class="inline-edit" href="#" ng-click="editCategory('edit-category',subcategory.Name)"><i class="fa fa-pencil-square-o"></i></a>
+                      <a class="inline-delete" href="#" ng-click="deleteCategory(subcategory.Name)"><i class="fa fa-times-circle"></i></a></span>
+                    <ul id ="{{subcategory.Name}}-list" class="child-nav" style="display:none;">
+                      <li ng-repeat="folder in folderList()" ng-if="folderCategory(folder) == subcategory.Name">
+                        <a class="subsubcategories" href="#" ng-click = "showFolder(folder.id)">
+                          <i class="fa " ng-class="[folder.type == 'readonly' ? 'fa-lock' : 'fa-folder']"></i>
+                          <span tooltip data-original-title="{{folder.label.length != 0 ? folder.id : ''}}">{{folder.label.length != 0 ? folder.label : folder.id}}</span>
+                          <i class=" arrow"></i>
+                        </a>
+                      </li>
+                      <li ng-repeat="subsubcategory in categoryList()" ng-if="existSubCategory(subcategory.Name) == true && verifySubCategory(subsubcategory.Name) == subcategory.Name">
+                          <a class="inline subsubcategories" href="#" ng-click="slideCategory(subsubcategory.Name)"><i class="fa fa-folder-open"></i><span style="margin-right:20px;">{{subsubcategory.Name}}</span></a>
+                          <span class="inline-span"><a id="add-subcategory" class="inline-add" href="#" ng-click="addSubCategory('input-subcategory',subsubcategory.Name)"><i class="fa fa-plus-circle"></i></a>
+                          <a id="edit-icon" class="inline-edit" href="#" ng-click="editCategory('edit-category',subsubcategory.Name)"><i class="fa fa-pencil-square-o"></i></a>
+                          <a class="inline-delete" href="#" ng-click="deleteCategory(subsubcategory.Name)"><i class="fa fa-times-circle"></i></a></span>
+                        <ul id ="{{subsubcategory.Name}}-list" class="child-nav" style="display:none;">
+                          <li ng-repeat="folder in folderList()" ng-if="folderCategory(folder) == subsubcategory.Name">
+                            <a class="subsubsubcategories" href="#" ng-click = "showFolder(folder.id)">
+                              <i class="fa " ng-class="[folder.type == 'readonly' ? 'fa-lock' : 'fa-folder']"></i>
+                              <span tooltip data-original-title="{{folder.label.length != 0 ? folder.id : ''}}">{{folder.label.length != 0 ? folder.label : folder.id}}</span>
+                              <i class=" arrow"></i>
+                            </a>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><a class="categories" href="#" ng-click="addFolder()"><i class="fa fa-plus"></i> <span>Add Folder</span></a></li>
+              <li id = "input-subcategory">
+                <span><a href="#" class="fa fa-times-circle fa-2x circle" ng-click="showInput('input-subcategory')"></a><input class="categories input-category" type="text" ng-model="addName" required/><a href="#" class="fa fa-chevron-circle-right fa-2x" ng-click="saveCategory('input-subcategory')"></a></span>
+              </li>
+              <li id = "add-category">
+                <span><a href="#" class="fa fa-times-circle fa-2x circle" ng-click="showInput('add-category')"></a><input class="categories input-category" type="text" ng-model="addName" required/><a href="#" class="fa fa-chevron-circle-right fa-2x" ng-click="saveCategory('add-category')"></a></span>
+              </li>
+              <li id = "edit-category">
+                <span><a href="#" class="fa fa-times-circle fa-2x circle" ng-click="showInput('edit-category')"></a><input class="categories input-category" id ="editCat" type="text" ng-model="editName" required/><a class="fa fa-chevron-circle-right fa-2x" href="#" ng-click="saveCategory('edit-category')"></a></span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+  <!-- Panel: Open, no auth -->
+
+  <!-- Panel: Restart Needed -->
+
+  <!-- Panel: New Device -->
+
+  <div ng-repeat="(device, event) in deviceRejections" class="row">
+    <div class="col-md-12 panel-message">
+      <div class="panel panel-warning">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <identicon class="panel-icon" data-value="device"></identicon>
+            <span  >New Device</span>
+            <span class="pull-right">{{ event.time | date:"yyyy-MM-dd HH:mm:ss" }}</span>
+          </h3>
+        </div>
+        <div class="panel-body">
+          <p>
+            <span    translate-value-device="{{ device }}"  translate-value-address="{{ event.data.address }}" translate-value-name="{{ event.data.name }}">
+              Device "{%name%}" ({%device%} at {%address%}) wants to connect. Add new device?
+            </span>
+          </p>
+        </div>
+        <div class="panel-footer clearfix footer-message-warning">
+          <div class="pull-right">
+            <button type="button" class="btn btn-sm btn-success" ng-click="addDevice(device, event.data.name, event.data.ethaddress)">
+              <span class="fa fa-plus"></span>&nbsp;<span >Add Device</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-danger" ng-click="ignoreRejectedDevice(device)">
+              <span class="fa fa-times"></span>&nbsp;<span >Ignore</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-default" ng-click="dismissDeviceRejection(device)">
+              <span class="fa fa-clock-o"></span>&nbsp;<span >Later</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: New Folder -->
+
+  <div ng-repeat="(key, event) in folderRejections" class="row reject">
+    <div class="col-md-12 panel-message">
+      <div class="panel panel-warning">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <div class="panel-icon">
+              <span class="fa fa-folder"></span>
+            </div>
+            <span  ng-if="!folders[event.data.folder]">New Folder</span>
+            <span  ng-if="folders[event.data.folder]">Share Folder</span>
+            <span class="pull-right">{{ event.time | date:"yyyy-MM-dd HH:mm:ss" }}</span>
+          </h3>
+        </div>
+        <div class="panel-body">
+          <p>
+            <span ng-if="event.data.folderLabel.length == 0"  translate-value-device="{{ deviceName(findDevice(event.data.device)) }}" translate-value-folder="{{ event.data.folder }}">
+              {%device%} wants to share folder "{%folder%}".
+            </span>
+            <span ng-if="event.data.folderLabel.length != 0"  translate-value-device="{{ deviceName(findDevice(event.data.device)) }}" translate-value-folder="{{ event.data.folder }}" translate-value-folderlabel="{{ event.data.folderLabel }}">
+              {%device%} wants to share folder "{%folderlabel%}" ({%folder%}).
+            </span>
+            <span  ng-if="folders[event.data.folder]">Share this folder?</span>
+            <span  ng-if="!folders[event.data.folder]">Add new folder?</span>
+          </p>
+        </div>
+        <div class="panel-footer clearfix footer-message-warning">
+          <div class="pull-right">
+            <button type="button" class="btn btn-sm btn-success" ng-click="addFolderAndShare(event.data.folder, event.data.folderLabel, event.data.folderCategories, event.data.device)" ng-if="!folders[event.data.folder]">
+              <span class="fa fa-check"></span>&nbsp;<span >Add</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-success" ng-click="shareFolderWithDevice(event.data.folder, event.data.device)" ng-if="folders[event.data.folder]">
+              <span class="fa fa-check"></span>&nbsp;<span >Share</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-default" ng-click="dismissFolderRejection(event.data.folder, event.data.device)">
+              <span class="fa fa-clock-o"></span>&nbsp;<span >Later</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-default" ng-click="ignoreRejectedFolder(event.data.folder, event.data.device)">
+              <span class="fa fa-times"></span>&nbsp;<span >Ignore</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <!-- Panel: Notice -->
+
+    <div ng-if="errorList().length > 0" class="row">
+      <div class="col-md-12 panel-message">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <div class="panel-icon">
+                <span class="fa fa-exclamation-circle"></span>
+              </div>
+              <span >Notice</span>
+            </h3>
+          </div>
+          <div class="panel-body">
+            <p ng-repeat="err in errorList()">
+              <small>{{err.when | date:"yyyy-MM-dd HH:mm:ss"}}:</small>
+              <span ng-bind-html="friendlyDevices(err.message) | linky: '_blank'"></span>
+            </p>
+          </div>
+          <div class="panel-footer footer-message-warning">
+            <button type="button" class="btn btn-sm btn-default pull-right" ng-click="clearErrors()">
+              <span class="fa fa-check"></span>&nbsp;<span >OK</span>
+            </button>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- First regular row -->
+
+    <div class="row">
+      <div id ="{{folder.id}}" class="col-md-6" ng-repeat="folder in folderList()">
+        <div class="panel border-primary no-border border-3-top">
+          <div class="panel-heading" data-target="#folder-{{$index}}" aria-expanded="false">
+            <div class="panel-progress" ng-show="folderStatus(folder) == 'syncing'" ng-attr-style="width: {{syncPercentage(folder.id)}}%"></div>
+            <div class="panel-progress" ng-show="folderStatus(folder) == 'scanning' && scanProgress[folder.id] != undefined" ng-attr-style="width: {{scanPercentage(folder.id)}}%"></div>
+            <div class="pull-right fa fa-close" ng-click="hideFolder(folder.id)"></div>
+            <h4 class="panel-title">
+              <div class="panel-icon">
+                <span class="fa fa-fw" ng-class="[folder.type == 'readonly' ? 'fa-lock' : 'fa-folder']"></span>
+              </div>
+              <div class="panel-status pull-right text-{{folderClass(folder)}}" ng-switch="folderStatus(folder)">
+                <span ng-switch-when="paused"><span >Paused</span></span>
+                <span ng-switch-when="unknown"><span >Unknown</span></span>
+                <span ng-switch-when="unshared"><span >Unshared</span></span>
+                <span ng-switch-when="stopped"><span >Stopped</span></span>
+                <span ng-switch-when="scanning">
+                  <span >Scanning</span>
+                  <span ng-if="scanPercentage(folder.id) != undefined">
+                    ({{scanPercentage(folder.id)}}%)
+                  </span>
+                </span>
+                <span ng-switch-when="idle"><span >Up to Date</span></span>
+                <span ng-switch-when="syncing">
+                  <span >Syncing</span>
+                  <span ng-show="syncRemaining(folder.id)">({{syncPercentage(folder.id)}}%, {{syncRemaining(folder.id) | binary}}B)</span>
+                </span>
+                <span ng-switch-when="outofsync"><span >Out of Sync</span></span>
+
+                  <a href="" ng-click="showFoldInfo=!showFoldInfo; getQR()" class="showFolderInfo">
+                      <span>Info</span>
+              	</a>
+              </div>
+              <div class="panel-title-text">
+                <span tooltip data-original-title="{{folder.label.length != 0 ? folder.id : ''}}">{{folder.label.length != 0 ? folder.label : folder.id}}</span>
+              </div>
+            </h4>
+          </div>
+        <div id="folder-{{folder.id}}" class="folder">
+          <div class="panel-body panel-bod-folder" ng-show="showFoldInfo">
+              <table class="folder-data">
+                  <tbody>
+                      <tr class="folder-data-tr">
+                          <th><b>ID</b></th>
+                          <th>{{folder.id}}</th>
+                          <th class="qrImage" rowspan="4">
+                              <center>
+                                  <img class="qr-folder-image" src="{{generateQR(folder.id)}}" alt="Loading QR" />
+                              </center>
+                          </th>
+                      </tr>
+                      <tr class="folder-data-tr">
+                          <th><b>Path</b></th>
+                          <th>{{folder.path}}</th>
+
+                      </tr>
+                      <tr class="folder-data-tr">
+                          <th><b>Shared with</b></th>
+                          <th>{{sharesFolder(folder)}}</th>
+                      </tr>
+                      <tr class="folder-data-tr">
+                          <th><b>Last Scan</b></th>
+                          <th>{{folderStats[folder.id].lastScan | date:'yyyy-MM-dd HH:mm:ss'}}</th>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+          <div class="panel-body panel-bod">
+            <table class="table table-responsive table-data folder-transfer-table">
+              <tbody>
+                  <tr>
+                    <th class ="folder-item"><b>File</b></th>
+                    <th class ="folder-itemHash"><b>File HASH</b></th>
+                    <th class ="folder-nodeID"><b>Node</b></th>
+                    <th class ="folder-nodeHash"><b>Node HASH</b></th>
+                    <th class ="folder-time"><b>Last Modification</b></th>
+                    <th class ="folder-state"><b>State</b></th>
+                  </tr>
+                  <tr ng-repeat="row in dataFolder()" class="shared-file">
+                    <div>
+                        <th class ="folder-item" ng-if="row.foldID === folder.id">{{row.item}}</th>
+                        <th class ="folder-itemHash" ng-if="row.foldID === folder.id">{{row.itemHash}}</th>
+                        <th class ="folder-nodeID" ng-if="row.foldID === folder.id">{{row.nodeID}}</th>
+                        <th class ="folder-nodeHash" ng-if="row.foldID === folder.id">{{row.nodeHash}}</th>
+                        <th class ="folder-time" ng-if="row.foldID === folder.id">{{row.time}}></th>
+                        <th class ="folder-state" ng-if="row.foldID === folder.id">{{row.state}}</th>
+                    </div>
+                  </tr>
+              </tbody>
+            </table>
+          </div>
+            <span class="pull-right footer-folder">
+              <button type="button" class="btn btn-sm btn-danger pull-left" ng-click="override(folder.id)" ng-if="folderStatus(folder) == 'outofsync' && folder.type == 'readonly'">
+                <span class="fa fa-arrow-circle-up"></span>&nbsp;<span >Override Changes</span>
+              </button>
+              <button ng-if="!folder.paused" type="button" class="btn btn-sm btn-default" ng-click="setFolderPause(folder.id, true)">
+                <span class="fa fa-pause"></span>&nbsp;<span >Pause</span>
+              </button>
+              <button ng-if="folder.paused" type="button" class="btn btn-sm btn-default" ng-click="setFolderPause(folder.id, false)">
+                <span class="fa fa-play"></span>&nbsp;<span >Resume</span>
+              </button>
+              <button type="button" class="btn btn-sm btn-default" ng-click="rescanFolder(folder.id)" ng-show="['idle', 'stopped', 'unshared'].indexOf(folderStatus(folder)) > -1">
+                <span class="fa fa-refresh"></span>&nbsp;<span >Rescan</span>
+              </button>
+              <button type="button" class="btn btn-sm btn-default" ng-click="editFolder(folder)">
+                <span class="fa fa-pencil"></span>&nbsp;<span >Edit</span>
+              </button>
+            </span>
+            <div class="clearfix"></div>
+        </div>
+      </div>
+      </div>
+
+      <div  id="1" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('1')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>CPU Utilization History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv1" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="2" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('2')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>RAM Utilization History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv2" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="3" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('3')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Disk Usage History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv3" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="4" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('4')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Download Rate History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv4" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="5" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('5')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Upload Rate History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv5" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="6" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('6')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Bandwidth History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv6" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="7" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('7')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-pie-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Disk Usage (%)</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv7" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="8" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('8')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-bar-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Number of Transfers</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv8" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div id="9" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('9')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-bar-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>List of past transfers</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-transfers">
+                <table class="table table-responsive table-data folder-transfer-table">
+                  <tbody>
+                    <tr>
+                      <th><b>Status</b></th>
+                      <th><b>Item</b></th>
+                      <th><b>Time</b></th>
+                    </tr>
+                    <tr ng-repeat="row in dataTable()">
+                      <td>{{row.status}}</td>
+                      <td>{{row.item}}</td>
+                      <td>{{row.time}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+          </div>
+      </div>
+
+      <!-- <div  id="10" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('10')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Hash Rate History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv9" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="11" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('11')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv10" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="12" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('12')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv11" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="13" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('13')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv12" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="14" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('14')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv13" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="15" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('15')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv14" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="16" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('16')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (Percentiles 5) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                <div id="chartdiv15" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="17" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('17')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (Percentiles 20) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv16" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="18" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('18')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (Percentiles 50) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv17" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="19" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('19')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (Percentiles 80) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv18" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="20" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('20')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>Chain Inserts (Percentiles 95) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv19" class ="charts"></div>
+              </div>
+          </div>
+      </div> -->
+
+      <div  id="21" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('21')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Connects (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv20" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="22" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('22')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Connects (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv21" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="23" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('23')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Connects (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv22" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="24" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('24')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Connects (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv23" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="25" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('25')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Connects (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv24" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="26" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('26')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Traffic (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv25" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="27" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('27')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Traffic (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv26" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="28" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('28')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Traffic (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv27" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="29" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('29')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Traffic (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv28" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="30" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('30')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Inbound Traffic (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv29" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="31" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('31')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Connects (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv30" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="32" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('32')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Connects (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv31" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="33" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('33')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Connects (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv32" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="34" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('34')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Connects (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv33" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="35" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('35')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Connects (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv34" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="36" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('36')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Traffic (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv35" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="37" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('37')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Traffic (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv36" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="38" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('38')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Traffic (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv37" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="39" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('39')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Traffic (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv38" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="40" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('40')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>P2P Outbound Traffic (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv39" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <!-- <div  id="41" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('41')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Count (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv40" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="42" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('42')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Count (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv41" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="43" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('43')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Count (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv42" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="44" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('44')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Count (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv43" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="45" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('45')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Count (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv44" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="46" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('46')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Data (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv45" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="47" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('47')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Data (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv46" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="48" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('48')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Data (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv47" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="49" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('49')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Data (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv48" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="50" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('50')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Read Data (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv49" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="51" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('51')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Count (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv50" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="52" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('52')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Count (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv51" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="53" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('53')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Count (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv52" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="54" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('54')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Count (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv53" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="55" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('55')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Count (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv54" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="56" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('56')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Data (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv55" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="57" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('57')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Data (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv56" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="58" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('58')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Data (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv57" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="59" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('59')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Data (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv58" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="60" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('60')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Disk Write Data (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv59" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="61" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('61')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Allocs (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv60" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="62" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('62')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Allocs (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv61" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="63" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('63')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Allocs (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv62" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="64" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('64')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Allocs (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv63" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="65" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('65')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Allocs (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv64" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="66" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('66')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Frees (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv65" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="67" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('67')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Frees (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv66" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="68" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('68')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Frees (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv67" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="69" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('69')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Frees (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv68" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="70" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('70')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Frees (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv69" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="71" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('71')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Inuse (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv70" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="72" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('72')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Inuse (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv71" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="73" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('73')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Inuse (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv72" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="74" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('74')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Inuse (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv73" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="75" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('75')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Inuse (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv74" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="76" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('76')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Pauses (AvgRate01Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv75" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="77" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('77')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Pauses (AvgRate05Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv76" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="78" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('78')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Pauses (AvgRate15Min) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv77" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="79" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('79')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Pauses (MeanRate) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv78" class ="charts"></div>
+              </div>
+          </div>
+      </div>
+
+      <div  id="80" class="col-md-6">
+          <div class="panel border-primary no-border border-3-top">
+              <div class="panel-heading panel-head-graph">
+                <div class="pull-right fa fa-close" ng-click="hideGraph('80')"></div>
+                <h4 class="panel-title">
+                  <div class="panel-icon">
+                    <span class="fa fa-line-chart"></span>
+                  </div>
+                  <div class="panel-title-text">
+                    <span>System Memory Pauses (Overall) History</span>
+                  </div>
+                </h4>
+              </div>
+              <div class="panel-body panel-bod-graph">
+                  <div id="chartdiv79" class ="charts"></div>
+              </div>
+          </div>
+      </div> -->
+
+        <!-- Remote devices -->
+        <div id ="{{deviceCfg.deviceID}}" class="col-md-6" ng-repeat="deviceCfg in otherDevices()">
+          <div class="panel border-primary no-border border-3-top">
+            <div class="panel-heading" data-target="#device-{{$index}}" aria-expanded="false">
+              <div class="panel-progress" ng-show="deviceStatus(deviceCfg) == 'syncing'" ng-attr-style="width: {{completion[deviceCfg.deviceID]._total | number:0}}%"></div>
+              <div class="pull-right fa fa-close" ng-click="hideDevice(deviceCfg.deviceID)"></div>
+              <h4 class="panel-title">
+                <identicon class="panel-icon" data-value="deviceCfg.deviceID"></identicon>
+                <span ng-switch="deviceStatus(deviceCfg)" class="pull-right text-{{deviceClass(deviceCfg)}}">
+                  <span ng-switch-when="insync"><span class="hidden-xs" >Up to Date</span><span class="visible-xs">&#9724;</span></span>
+                  <span ng-switch-when="syncing">
+                    <span class="hidden-xs" >Syncing</span> ({{completion[deviceCfg.deviceID]._total | number:0}}%, {{completion[deviceCfg.deviceID]._needBytes | binary}}B)
+                  </span>
+                  <span ng-switch-when="paused"><span class="hidden-xs" >Paused</span><span class="visible-xs">&#9724;</span></span>
+                  <span ng-switch-when="disconnected"><span class="hidden-xs" >Disconnected</span><span class="visible-xs">&#9724;</span></span>
+                  <span ng-switch-when="unused"><span class="hidden-xs" >Unused</span><span class="visible-xs">&#9724;</span></span>
+                </span>
+                <span>{{deviceName(deviceCfg)}}</span>
+              </h4>
+            </div>
+            <div id="device-{{deviceCfg.deviceID}}" class="folder">
+              <div class="panel-body panel-bod">
+                <table class="table table-device">
+                  <tbody>
+                    <tr ng-if="connections[deviceCfg.deviceID].connected">
+                      <th><span class="fa fa-fw fa-cloud-download"></span>&nbsp;<span >Download Rate</span></th>
+                      <td class="text-right">
+                        <a href="#" class="toggler" ng-click="toggleUnits()">
+                          <span ng-if="!metricRates">{{connections[deviceCfg.deviceID].inbps | binary}}B/s</span>
+                          <span ng-if="metricRates">{{connections[deviceCfg.deviceID].inbps*8 | metric}}bps</span>
+                          ({{connections[deviceCfg.deviceID].inBytesTotal | binary}}B)</span>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr ng-if="connections[deviceCfg.deviceID].connected">
+                      <th><span class="fa fa-fw fa-cloud-upload"></span>&nbsp;<span >Upload Rate</span></th>
+                      <td class="text-right">
+                        <a href="#" class="toggler" ng-click="toggleUnits()">
+                          <span ng-if="!metricRates">{{connections[deviceCfg.deviceID].outbps | binary}}B/s</span>
+                          <span ng-if="metricRates">{{connections[deviceCfg.deviceID].outbps*8 | metric}}bps</span>
+                          ({{connections[deviceCfg.deviceID].outBytesTotal | binary}}B)</span>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><span class="fa fa-fw fa-link"></span>&nbsp<span >Address</span></th>
+                      <td ng-if="connections[deviceCfg.deviceID].connected" class="text-right">
+                        <span tooltip data-original-title="{{ connections[deviceCfg.deviceID].type.indexOf('Relay') > -1 ? '' : connections[deviceCfg.deviceID].type }}">
+                          {{deviceAddr(deviceCfg)}}
+                        </span>
+                      </td>
+                      <td ng-if="!connections[deviceCfg.deviceID].connected" class="text-right">
+                        <span ng-repeat="addr in deviceCfg.addresses"><span tooltip data-original-title="{{'Configured' | translate}}">{{addr}}</span><br></span>
+                        <span ng-repeat="addr in discoveryCache[deviceCfg.deviceID].addresses"><span tooltip data-original-title="{{'Discovered' | translate}}">{{addr}}</span><br></span>
+                      </td>
+                    </tr>
+                    <tr ng-if="connections[deviceCfg.deviceID].connected && connections[deviceCfg.deviceID].type.indexOf('Relay') > -1" tooltip data-original-title="Connections via relays might be rate limited by the relay">
+                      <th><span class="fa fa-fw fa-warning text-danger"></span>&nbsp;<span >Connection Type</span></th>
+                      <td class="text-right">{{connections[deviceCfg.deviceID].type}}</td>
+                    </tr>
+                    <tr ng-if="deviceCfg.allowedNetworks">
+                      <th><span class="fa fa-fw fa-filter"></span>&nbsp;<span >Allowed Networks</span></th>
+                      <td class="text-right">
+                        <span>{{deviceCfg.allowedNetworks.join(", ")}}</span>
+                      </td>
+                    </tr>
+                    <tr ng-if="deviceCfg.compression != 'metadata'">
+                      <th><span class="fa fa-fw fa-compress"></span>&nbsp;<span >Compression</span></th>
+                      <td class="text-right">
+                        <span ng-if="deviceCfg.compression == 'always'" >All Data</span>
+                        <span ng-if="deviceCfg.compression == 'never'" >Off</span>
+                      </td>
+                    </tr>
+                    <tr ng-if="deviceCfg.introducer">
+                      <th><span class="fa fa-fw fa-thumbs-o-up"></span>&nbsp;<span >Introducer</span></th>
+                      <td  class="text-right">Yes</td>
+                    </tr>
+                    <tr ng-if="deviceCfg.introducedBy">
+                      <th><span class="fa fa-fw fa-meh-o"></span>&nbsp;<span >Introduced By</span></th>
+                      <td class="text-right">{{ deviceName(findDevice(deviceCfg.introducedBy)) || deviceCfg.introducedBy.substring(0, 5) }}</td>
+                    </tr>
+                    <tr ng-if="connections[deviceCfg.deviceID].clientVersion">
+                      <th><span class="fa fa-fw fa-tag"></span>&nbsp;<span >Version</span></th>
+                      <td class="text-right">{{connections[deviceCfg.deviceID].clientVersion}}</td>
+                    </tr>
+                    <tr ng-if="!connections[deviceCfg.deviceID].connected">
+                      <th><span class="fa fa-fw fa-eye"></span>&nbsp;<span >Last seen</span></th>
+                      <td  ng-if="!deviceStats[deviceCfg.deviceID].lastSeenDays || deviceStats[deviceCfg.deviceID].lastSeenDays >= 365" class="text-right">Never</td>
+                      <td ng-if="deviceStats[deviceCfg.deviceID].lastSeenDays < 365" class="text-right">{{deviceStats[deviceCfg.deviceID].lastSeen | date:"yyyy-MM-dd HH:mm:ss"}}</td>
+                    </tr>
+                    <tr ng-if="deviceFolders(deviceCfg).length > 0">
+                      <th><span class="fa fa-fw fa-folder"></span>&nbsp;<span >Folders</span></th>
+                      <td class="text-right">{{deviceFolders(deviceCfg).map(folderLabel).join(", ")}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+                <span class="pull-right footer-folder">
+                  <button ng-if="!deviceCfg.paused" type="button" class="btn btn-sm btn-default" ng-click="setDevicePause(deviceCfg.deviceID, true)">
+                    <span class="fa fa-pause"></span>&nbsp;<span >Pause</span>
+                  </button>
+                  <button ng-if="deviceCfg.paused" type="button" class="btn btn-sm btn-default" ng-click="setDevicePause(deviceCfg.deviceID, false)">
+                    <span class="fa fa-play"></span>&nbsp;<span >Resume</span>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-default" ng-click="editDevice(deviceCfg)">
+                    <span class="fa fa-pencil"></span>&nbsp;<span >Edit</span>
+                  </button>
+                </span>
+                <div class="clearfix"></div>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div id ="sidebar" class="left-sidebar fixed-sidebar bg-black-300 box-shadow visible-small">
+      <div class="sidebar-content">
+        <div class="sidebar-nav">
+          <ul class="side-nav color-gray">
+            <li class="nav-header"><span >Metrics</span></li>
+            <li class="has-children">
+              <a href="#"><i class="fa fa-desktop"></i><span>This DappBox</span><i class=" arrow"></i></a>
+              <ul class="child-nav">
+                <li><a href="#" ng-click="showGraph('1')"><i class="fa fa-line-chart"></i><span>CPU Utilization History</span></a></li>
+                <li><a href="#" ng-click="showGraph('2')"><i class="fa fa-line-chart"></i><span>RAM Utilization History</span></a></li>
+                <li><a href="#" ng-click="showGraph('3')"><i class="fa fa-line-chart"></i><span>Disk Usage History</span></a></li>
+                <li><a href="#" ng-click="showGraph('4')"><i class="fa fa-line-chart"></i><span>Download Rate History</span></a></li>
+                <li><a href="#" ng-click="showGraph('5')"><i class="fa fa-line-chart"></i><span>Upload Rate History</span></a></li>
+                <li><a href="#" ng-click="showGraph('6')"><i class="fa fa-line-chart"></i><span>Bandwidth History</span></a></li>
+                <li><a href="#"ng-click="showGraph('7')"><i class="fa fa-pie-chart"></i><span>Disk Usage (%)</span></a></li>
+                <li><a href="#" ng-click="showGraph('8')"><i class="fa fa-bar-chart"></i><span>Number of Transfers</span></a></li>
+                <li><a href="#" ng-click="showGraph('9')"><i class="fa fa-reorder"></i><span>List of past transfers</span></a></li>
+              </ul>
+            </li>
+            <li class="has-children">
+              <a href="#"><i class="fa fa-hdd-o"></i> <span >My DappBox's network</span> <i class=" arrow"></i></a>
+              <ul class="child-nav">
+                <li ng-repeat="deviceCfg in otherDevices()">
+                  <a href="#" ng-click ="showDevice(deviceCfg.deviceID)">
+                    <i class="fa fa-desktop"></i>
+                    <span>{{deviceCfg.name}}</span>
+                    <i class=" arrow"></i>
+                  </a>
+                </li>
+                <li><a href="#" ng-click="addDevice()"><i class="fa fa-plus"></i><span >Add Remote Dappbox</span><i class=" arrow"></i></a></li>
+              </ul>
+            </li>
+            </li>
+            <li class="nav-header"><span class="category"><span >Folders</span><a id="plus-category1" class="add-category" href="#" ng-click="addCategory('add-category1')"><i class="fa fa-plus-circle fa-2x"></i></a></span></li>
+            <li class="has-children" ng-repeat="category in categoryList()" ng-if="isSubCategory(category.Name) == false">
+                <a class="inline categories" href="#" ng-click="slideCategory1(category.Name)"><i class="fa fa-folder-open"></i><span style="margin-right:20px;">{{category.Name}}</span></a>
+                <span class="inline-span"><a id="add-subcategory" class="inline-add" href="#" ng-click="addSubCategory('input-subcategory1',category.Name)"><i class="fa fa-plus-circle"></i></a>
+                <a id="edit-icon" class="inline-edit" href="#" ng-if="category.Name != 'Default'" ng-click="editCategory('edit-category1',category.Name)"><i class="fa fa-pencil-square-o"></i></a>
+                <a class="inline-delete" href="#" ng-if="category.Name != 'Default'" ng-click="deleteCategory(category.Name)"><i class="fa fa-times-circle"></i></a></span>
+              <ul id ="{{category.Name}}-list1" class="child-nav" style="display:none;">
+                <li ng-repeat="folder in folderList()" ng-if="folderCategory(folder) == category.Name">
+                  <a class="subcategories" href="#" ng-click = "showFolder(folder.id)">
+                    <i class="fa " ng-class="[folder.type == 'readonly' ? 'fa-lock' : 'fa-folder']"></i>
+                    <span tooltip data-original-title="{{folder.label.length != 0 ? folder.id : ''}}">{{folder.label.length != 0 ? folder.label : folder.id}}</span>
+                    <i class=" arrow"></i>
+                  </a>
+                </li>
+                <li ng-repeat="subcategory in categoryList()" ng-if="existSubCategory(category.Name) == true && verifySubCategory(subcategory.Name) == category.Name">
+                    <a class="inline subcategories" href="#" ng-click="slideCategory1(subcategory.Name)"><i class="fa fa-folder-open"></i><span style="margin-right:20px;">{{subcategory.Name}}</span></a>
+                    <span class="inline-span"><a id="add-subcategory" class="inline-add" href="#" ng-click="addSubCategory('input-subcategory1',subcategory.Name)"><i class="fa fa-plus-circle"></i></a>
+                    <a id="edit-icon" class="inline-edit" href="#" ng-click="editCategory('edit-category1',subcategory.Name)"><i class="fa fa-pencil-square-o"></i></a>
+                    <a class="inline-delete" href="#" ng-click="deleteCategory(subcategory.Name)"><i class="fa fa-times-circle"></i></a></span>
+                  <ul id ="{{subcategory.Name}}-list1" class="child-nav" style="display:none;">
+                    <li ng-repeat="folder in folderList()" ng-if="folderCategory(folder) == subcategory.Name">
+                      <a class="subsubcategories" href="#" ng-click = "showFolder(folder.id)">
+                        <i class="fa " ng-class="[folder.type == 'readonly' ? 'fa-lock' : 'fa-folder']"></i>
+                        <span tooltip data-original-title="{{folder.label.length != 0 ? folder.id : ''}}">{{folder.label.length != 0 ? folder.label : folder.id}}</span>
+                        <i class=" arrow"></i>
+                      </a>
+                    </li>
+                    <li ng-repeat="subsubcategory in categoryList()" ng-if="existSubCategory(subcategory.Name) == true && verifySubCategory(subsubcategory.Name) == subcategory.Name">
+                        <a class="inline subsubcategories" href="#" ng-click="slideCategory1(subsubcategory.Name)"><i class="fa fa-folder-open"></i><span style="margin-right:20px;">{{subsubcategory.Name}}</span></a>
+                        <span class="inline-span"><a id="add-subcategory" class="inline-add" href="#" ng-click="addSubCategory('input-subcategory1',subsubcategory.Name)"><i class="fa fa-plus-circle"></i></a>
+                        <a id="edit-icon" class="inline-edit" href="#" ng-click="editCategory('edit-category1',subsubcategory.Name)"><i class="fa fa-pencil-square-o"></i></a>
+                        <a class="inline-delete" href="#" ng-click="deleteCategory(subsubcategory.Name)"><i class="fa fa-times-circle"></i></a></span>
+                      <ul id ="{{subsubcategory.Name}}-list1" class="child-nav" style="display:none;">
+                        <li ng-repeat="folder in folderList()" ng-if="folderCategory(folder) == subsubcategory.Name">
+                          <a class="subsubsubcategories" href="#" ng-click = "showFolder(folder.id)">
+                            <i class="fa " ng-class="[folder.type == 'readonly' ? 'fa-lock' : 'fa-folder']"></i>
+                            <span tooltip data-original-title="{{folder.label.length != 0 ? folder.id : ''}}">{{folder.label.length != 0 ? folder.label : folder.id}}</span>
+                            <i class=" arrow"></i>
+                          </a>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li><a class="categories" href="#" ng-click="addFolder()"><i class="fa fa-plus"></i> <span>Add Folder</span></a></li>
+            <li id = "input-subcategory1">
+              <span><a href="#" class="fa fa-times-circle" ng-click="showInput('input-subcategory1')"></a><input class="categories input-category" type="text" ng-model="addName" required/><a href="#" class="fa fa-chevron-circle-right fa-2x" ng-click="saveCategory('input-subcategory1')"></a></span>
+            </li>
+            <li id = "add-category1">
+              <span><a href="#" class="fa fa-times-circle" ng-click="showInput('add-category1')"></a><input class="categories input-category" type="text" ng-model="addName" required/><a href="#" class="fa fa-chevron-circle-right fa-2x" ng-click="saveCategory('add-category1')"></a></span>
+            </li>
+            <li id = "edit-category1">
+              <span><a href="#" class="fa fa-times-circle" ng-click="showInput('edit-category1')"></a><input class="categories input-category" id ="editCat" type="text" ng-model="editName" required/><a class="fa fa-chevron-circle-right fa-2x" href="#" ng-click="saveCategory('edit-category1')"></a></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>  <!-- /row -->
+</div>  <!-- /container -->
+
+  <ng-include src="'dappbox/core/networkErrorDialogView.html'"></ng-include>
+  <ng-include src="'dappbox/core/httpErrorDialogView.html'"></ng-include>
+  <ng-include src="'dappbox/core/shutdownDialogView.html'"></ng-include>
+  <ng-include src="'dappbox/device/idqrModalView.html'"></ng-include>
+  <ng-include src="'dappbox/device/editDeviceModalView.html'"></ng-include>
+  <ng-include src="'dappbox/device/globalChangesModalView.html'"></ng-include>
+  <ng-include src="'dappbox/folder/editFolderModalView.html'"></ng-include>
+  <ng-include src="'dappbox/folder/editIgnoresModalView.html'"></ng-include>
+  <ng-include src="'dappbox/settings/advancedSettingsModalView.html'"></ng-include>
+  <ng-include src="'dappbox/transfer/neededFilesModalView.html'"></ng-include>
+  <ng-include src="'dappbox/transfer/failedFilesModalView.html'"></ng-include>
+  <ng-include src="'dappbox/core/discoveryFailuresModalView.html'"></ng-include>
+  <ng-include src="'dappbox/ethereum/transferOwnershipModalView.html'"></ng-include>
+
+  <!-- vendor scripts -->
+  <script src="vendor/jquery/jquery-2.2.2.js"></script>
+  <script src="vendor/angular/angular.js"></script>
+  <script src="vendor/angular/angular-sanitize.js"></script>
+  <script src="vendor/angular/angular-translate.js"></script>
+  <script src="vendor/angular/angular-translate-loader-static-files.js"></script>
+  <script src="vendor/angular/angular-dirPagination.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.js"></script>
+
+  <script src="assets/js/pace/pace.min.js"></script>
+  <script src="assets/js/lobipanel/lobipanel.min.js"></script>
+  <script src="assets/js/iscroll/iscroll.js"></script>
+
+  <!-- ========== PAGE JS FILES ========== -->
+  <script src="assets/js/prism/prism.js"></script>
+  <script src="assets/js/toastr/toastr.min.js"></script>
+  <script src="assets/js/amcharts/amcharts.js"></script>
+  <script src="assets/js/amcharts/serial.js"></script>
+  <script src="assets/js/amcharts/pie.js"></script>
+  <script src="assets/js/amcharts/plugins/animate/animate.min.js"></script>
+  <script src="assets/js/amcharts/plugins/export/export.min.js"></script>
+  <script src="assets/js/amcharts/plugins/responsive/responsive.min.js"></script>
+  <link rel="stylesheet" href="assets/js/amcharts/plugins/export/export.css" type="text/css" media="all" />
+  <script src="assets/js/amcharts/themes/light.js"></script>
+
+  <script src="assets/js/main.js"></script>
+  <!-- / vendor scripts -->
+
+  <!-- gui application code -->
+  <script src="dappbox/core/module.js"></script>
+  <script src="dappbox/core/alwaysNumberFilter.js"></script>
+  <script src="dappbox/core/basenameFilter.js"></script>
+  <script src="dappbox/core/binaryFilter.js"></script>
+  <script src="dappbox/core/durationFilter.js"></script>
+  <script src="dappbox/core/eventService.js"></script>
+  <script src="dappbox/core/identiconDirective.js"></script>
+  <script src="dappbox/core/languageSelectDirective.js"></script>
+  <script src="dappbox/core/lastErrorComponentFilter.js"></script>
+  <script src="dappbox/core/localeService.js"></script>
+  <script src="dappbox/core/modalDirective.js"></script>
+  <script src="dappbox/core/naturalFilter.js"></script>
+  <script src="dappbox/core/metricFilter.js"></script>
+  <script src="dappbox/core/notificationDirective.js"></script>
+  <script src="dappbox/core/pathIsSubDirDirective.js"></script>
+  <script src="dappbox/core/popoverDirective.js"></script>
+  <script src="dappbox/core/selectOnClickDirective.js"></script>
+  <script src="dappbox/core/dappboxController.js"></script>
+  <script src="dappbox/core/tooltipDirective.js"></script>
+  <script src="dappbox/core/uniqueFolderDirective.js"></script>
+  <script src="dappbox/core/validDeviceidDirective.js"></script>
+  <script src="assets/lang/valid-langs.js"></script>
+  <script src="assets/lang/prettyprint.js"></script>
+  <script src="meta.js"></script>
+  <script src="dappbox/app.js"></script>
+  <!-- / gui application code -->
+
+  <!-- Context Menu -->
+  <nav id="context-menu" class="context-menu">
+    <ul class="context-menu__items">
+      <li class="context-menu__item" ng-click="showFileInfo()">
+        <a href="#" class="context-menu__link" data-action="View">&#11179; View File Information</a>
+      </li>
+      <li class="context-menu__item" ng-click="transferOwnershipModelView()">
+        <a href="#" class="context-menu__link" data-action="Edit">&#11179; Transfer Ownership</a> <!-- &#62; -->
+      </li>
+    </ul>
+  </nav>
+  <!-- Context Menu -->
+
+</body>
+</html>

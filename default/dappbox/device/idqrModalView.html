@@ -1,0 +1,53 @@
+<modal id="idqr" status="info" icon="qrcode" heading="{{'Device Identification' | translate}} - {{deviceName(currentDevice)}}" large="yes" closeable="yes">
+  <div class="modal-body">
+    <label><span translate>Device ID</span></label>
+    <div class="well well-sm text-monospace text-center" select-on-click>{{currentDevice.deviceID}}</div>
+    <img ng-if="currentDevice.deviceID" class="center-block img-thumbnail" ng-src="qr/?text={{currentDevice.deviceID}}"/>
+  </div>
+  <div class="modal-body">
+    <label><span translate>Ethereum Address</span></label>
+    <div class="well well-sm text-monospace text-center" select-on-click>{{getEthAddressAccount()}}</div>
+  </div>
+  <div class="modal-body">
+    <label><span translate>Node Info</span></label>
+
+    <label class="sub-label-node-info-1"><span translate>Enode</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value" select-on-click>{{ethereumnodeinfo.Enode}}</div>
+    <label class="sub-label-node-info-1"><span translate>ID</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value" select-on-click>{{ethereumnodeinfo.id}}</div>
+    <label class="sub-label-node-info-1"><span translate>IP</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value" select-on-click>{{ethereumnodeinfo.ip}}</div>
+    <label class="sub-label-node-info-1"><span translate>Listen Address</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value" select-on-click>{{ethereumnodeinfo.ListenAddr}}</div>
+    <label class="sub-label-node-info-1"><span translate>Name</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value" select-on-click>{{ethereumnodeinfo.Name}}</div>
+
+    <label class="sub-label-node-info-1"><span translate>Ports</span></label>
+
+    <label class="sub-label-node-info-2"><span translate>Discovery</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value sub-label-node-info-1" select-on-click>{{ethereumnodeinfo.PortsDiscovery}}</div>
+    <label class="sub-label-node-info-2"><span translate>Listener</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value sub-label-node-info-1" select-on-click>{{ethereumnodeinfo.PortsListener}}</div>
+
+
+
+    <label class="sub-label-node-info-1"><span translate>Protocols</span></label>
+    <label class="sub-label-node-info-2"><span translate>Eth</span></label>
+    <label class="sub-label-node-info-3"><span translate>Difficulty</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value sub-label-node-info-2" select-on-click>{{ethereumnodeinfo.ProtocolsDifficulty}}</div>
+    <label class="sub-label-node-info-3"><span translate>Genesis</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value sub-label-node-info-2" select-on-click>{{ethereumnodeinfo.ProtocolsGenesis}}</div>
+    <label class="sub-label-node-info-3"><span translate>Head</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value sub-label-node-info-2" select-on-click>{{ethereumnodeinfo.ProtocolsHead}}</div>
+    <label class="sub-label-node-info-3"><span translate>Network</span></label>
+    <div class="well well-sm text-monospace text-center node-info-modal node-info-value sub-label-node-info-2" select-on-click>{{ethereumnodeinfo.ProtocolsNetwork}}</div>
+
+
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">
+      <span class="fa fa-times"></span>&nbsp;<span translate>Close</span>
+    </button>
+  </div>
+
+</modal>
